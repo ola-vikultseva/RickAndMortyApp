@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
@@ -17,18 +18,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.rickandmortyapp.domain.model.filter.CharacterFilter
-import com.example.rickandmortyapp.domain.model.filter.CharacterGender
-import com.example.rickandmortyapp.domain.model.filter.CharacterSpecies
-import com.example.rickandmortyapp.domain.model.filter.CharacterStatus
-import com.example.rickandmortyapp.domain.model.filter.CharacterType
+import com.example.rickandmortyapp.domain.model.CharacterFilter
+import com.example.rickandmortyapp.domain.model.CharacterGender
+import com.example.rickandmortyapp.domain.model.CharacterSpecies
+import com.example.rickandmortyapp.domain.model.CharacterStatus
+import com.example.rickandmortyapp.domain.model.CharacterType
 import com.example.rickandmortyapp.presentation.utils.displayFilterTitle
 import com.example.rickandmortyapp.presentation.utils.displayName
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterModalBottomSheet(
-    filterUiState: CharacterFilter,
+    characterFilter: CharacterFilter,
     onFilterChange: (CharacterFilter) -> Unit,
     onApplyFilters: () -> Unit,
     onResetFilters: () -> Unit,
@@ -53,9 +54,9 @@ fun FilterModalBottomSheet(
             FilterGroup(
                 title = CharacterGender::class.java.displayFilterTitle(),
                 options = CharacterGender.entries,
-                selected = filterUiState.gender,
+                selected = characterFilter.gender,
                 onSelectedChange = { characterGender ->
-                    onFilterChange(filterUiState.copy(gender = characterGender))
+                    onFilterChange(characterFilter.copy(gender = characterGender))
                 },
                 displayName = CharacterGender::displayName
             )
@@ -63,9 +64,9 @@ fun FilterModalBottomSheet(
             FilterGroup(
                 title = CharacterSpecies::class.java.displayFilterTitle(),
                 options = CharacterSpecies.entries,
-                selected = filterUiState.species,
+                selected = characterFilter.species,
                 onSelectedChange = { characterSpecies ->
-                    onFilterChange(filterUiState.copy(species = characterSpecies))
+                    onFilterChange(characterFilter.copy(species = characterSpecies))
                 },
                 displayName = CharacterSpecies::displayName
             )
@@ -73,9 +74,9 @@ fun FilterModalBottomSheet(
             FilterGroup(
                 title = CharacterStatus::class.java.displayFilterTitle(),
                 options = CharacterStatus.entries,
-                selected = filterUiState.status,
+                selected = characterFilter.status,
                 onSelectedChange = { characterStatus ->
-                    onFilterChange(filterUiState.copy(status = characterStatus))
+                    onFilterChange(characterFilter.copy(status = characterStatus))
                 },
                 displayName = CharacterStatus::displayName
             )
@@ -83,9 +84,9 @@ fun FilterModalBottomSheet(
             FilterGroup(
                 title = CharacterType::class.java.displayFilterTitle(),
                 options = CharacterType.entries,
-                selected = filterUiState.type,
+                selected = characterFilter.type,
                 onSelectedChange = { characterType ->
-                    onFilterChange(filterUiState.copy(type = characterType))
+                    onFilterChange(characterFilter.copy(type = characterType))
                 },
                 displayName = CharacterType::displayName
             )
@@ -99,7 +100,7 @@ fun FilterModalBottomSheet(
                 ) {
                     Text(text = "Reset")
                 }
-                OutlinedButton(
+                Button(
                     onClick = onApplyFilters,
                     modifier = Modifier.weight(1f)
                 ) {

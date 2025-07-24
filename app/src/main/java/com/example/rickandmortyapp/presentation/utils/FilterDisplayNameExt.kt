@@ -1,9 +1,9 @@
 package com.example.rickandmortyapp.presentation.utils
 
-import com.example.rickandmortyapp.domain.model.filter.CharacterGender
-import com.example.rickandmortyapp.domain.model.filter.CharacterSpecies
-import com.example.rickandmortyapp.domain.model.filter.CharacterStatus
-import com.example.rickandmortyapp.domain.model.filter.CharacterType
+import com.example.rickandmortyapp.domain.model.CharacterGender
+import com.example.rickandmortyapp.domain.model.CharacterSpecies
+import com.example.rickandmortyapp.domain.model.CharacterStatus
+import com.example.rickandmortyapp.domain.model.CharacterType
 
 fun <T : Enum<T>> Class<T>.displayFilterTitle(): String = when (this) {
     CharacterGender::class.java -> "Gender"

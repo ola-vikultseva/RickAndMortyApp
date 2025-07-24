@@ -20,11 +20,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.rickandmortyapp.presentation.characterlist.model.CharacterUiModel
+import com.example.rickandmortyapp.domain.model.Character
 
 @Composable
 fun CharacterItem(
-    character: CharacterUiModel,
+    character: Character,
     onClick: () -> Unit
 ) {
     Card(
@@ -36,7 +36,6 @@ fun CharacterItem(
     ) {
         BoxWithConstraints {
             val imageSize = maxWidth
-            val infoHeight = imageSize / 3
             Column {
                 AsyncImage(
                     model = character.image,
@@ -49,7 +48,6 @@ fun CharacterItem(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-//                        .height(infoHeight)
                         .background(MaterialTheme.colorScheme.primary)
                         .padding(14.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,

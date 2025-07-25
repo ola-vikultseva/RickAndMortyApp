@@ -9,11 +9,11 @@ import androidx.paging.map
 import com.example.rickandmortyapp.data.db.RickAndMortyDatabase
 import com.example.rickandmortyapp.data.db.entity.CharacterEntity
 import com.example.rickandmortyapp.data.remote.api.RickAndMortyApiService
+import com.example.rickandmortyapp.data.remote.utils.toQueryMap
 import com.example.rickandmortyapp.domain.CharacterRepository
 import com.example.rickandmortyapp.domain.model.Character
-import com.example.rickandmortyapp.domain.model.CharacterQueryParams
+import com.example.rickandmortyapp.domain.model.CharacterFilter
 import com.example.rickandmortyapp.domain.model.isEmpty
-import com.example.rickandmortyapp.domain.model.toQueryMap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,15 +27,15 @@ class CharacterRepositoryImpl @Inject constructor(
     private val database: RickAndMortyDatabase
 ) : CharacterRepository {
 
-    private val _queryParams = MutableStateFlow(CharacterQueryParams())
+    private val characterFilter = MutableStateFlow(CharacterFilter())
 
-    override fun setQueryParams(queryParams: CharacterQueryParams) {
-        _queryParams.value = queryParams
+    override fun setCharacterFilter(filter: CharacterFilter) {
+        characterFilter.value = filter
     }
 
-    override fun getCharacters(): Flow<PagingData<Character>> = _queryParams.flatMapLatest { queryParams ->
-        Log.d("Test", "New api request with params: $queryParams")
-        if (queryParams.isEmpty()) {
+    override fun getCharacters(): Flow<PagingData<Character>> = characterFilter.flatMapLatest { filter ->
+        Log.d("CharacterFilter", "New api request with filter: $filter")
+        if (filter.isEmpty()) {
             Pager(
                 config = PagingConfig(
                     pageSize = 20,
@@ -52,7 +52,7 @@ class CharacterRepositoryImpl @Inject constructor(
                 ),
                 pagingSourceFactory = {
                     FilteredCharacterPagingSource(
-                        queryMap = queryParams.toQueryMap(),
+                        queryMap = filter.toQueryMap(),
                         apiService = apiService
                     )
                 }

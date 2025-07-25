@@ -46,7 +46,6 @@ fun CharacterListScreen(
     viewModel: CharacterListViewModel = hiltViewModel()
 ) {
     val characters = viewModel.characters.collectAsLazyPagingItems()
-    val searchQuery by viewModel.searchQuery.collectAsState()
     val characterFilter by viewModel.characterFilter.collectAsState()
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -69,7 +68,7 @@ fun CharacterListScreen(
                 .fillMaxWidth()
                 .statusBarsPadding()
                 .padding(16.dp),
-            value = searchQuery,
+            value = characterFilter.name ?: "",
             onValueChange = viewModel::onSearchQueryChange,
             placeholder = { Text("Enter a name") },
             leadingIcon = {

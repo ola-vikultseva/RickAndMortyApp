@@ -8,16 +8,16 @@ import androidx.paging.cachedIn
 import com.example.rickandmortyapp.domain.CharacterRepository
 import com.example.rickandmortyapp.domain.model.Character
 import com.example.rickandmortyapp.domain.model.CharacterFilter
-import com.example.rickandmortyapp.domain.model.CharacterQueryParams
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 @OptIn(FlowPreview::class)
@@ -28,9 +28,7 @@ class CharacterListViewModel @Inject constructor(
 
     val characters: Flow<PagingData<Character>> = repository.getCharacters().cachedIn(viewModelScope)
 
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery = _searchQuery.asStateFlow()
-
+    // Holds both filters and search query (in 'name' field)
     private val _characterFilter = MutableStateFlow(CharacterFilter())
     val characterFilter = _characterFilter.asStateFlow()
 
@@ -39,38 +37,40 @@ class CharacterListViewModel @Inject constructor(
     }
 
     fun onSearchQueryChange(query: String) {
-        Log.d("Test", "New search query: $query")
-        _searchQuery.value = query
+        Log.d("CharacterFilter", "New search query: $query")
+        val updatedFilter = _characterFilter.value.copy(name = query.takeIf { it.isNotEmpty() })
+        Log.d("CharacterFilter", "New filter: $updatedFilter")
+        _characterFilter.value = updatedFilter
     }
 
     fun onFilterChange(characterFilter: CharacterFilter) {
-        Log.d("Test", "New filter: $characterFilter")
+        Log.d("CharacterFilter", "New filter: $characterFilter")
         _characterFilter.value = characterFilter
     }
 
     fun onFilterApply() {
-        val queryParams = CharacterQueryParams(
-            searchQuery = searchQuery.value.takeIf { it.isNotEmpty() },
-            characterFilter = characterFilter.value
-        )
-        repository.setQueryParams(queryParams)
+        repository.setCharacterFilter(_characterFilter.value)
     }
 
     fun onFilterReset() {
-        _characterFilter.value = CharacterFilter()
+        val updatedFilter = _characterFilter.value.copy(
+            status = null,
+            species = null,
+            type = null,
+            gender = null
+        )
+        Log.d("CharacterFilter", "New filter: $updatedFilter")
+        _characterFilter.value = updatedFilter
     }
 
     private fun observeSearchQueryChanges() {
-        viewModelScope.launch {
-            searchQuery.debounce(500)
-                .distinctUntilChanged()
-                .collectLatest { query ->
-                    val queryParams = CharacterQueryParams(
-                        searchQuery = query.takeIf { it.isNotEmpty() },
-                        characterFilter = characterFilter.value
-                    )
-                    repository.setQueryParams(queryParams)
-                }
-        }
+        _characterFilter
+            .map { it.name }
+            .debounce(500)
+            .distinctUntilChanged()
+            .onEach {
+                repository.setCharacterFilter(_characterFilter.value)
+            }
+            .launchIn(viewModelScope)
     }
 }

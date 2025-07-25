@@ -129,11 +129,11 @@ fun CharacterListScreen(
                     onFilterChange = viewModel::onFilterChange,
                     onApplyFilters = {
                         scope.launch {
-                            viewModel.applyFilter()
+                            viewModel.onFilterApply()
                             sheetState.hide()
                         }
                     },
-                    onResetFilters = viewModel::resetFilter,
+                    onResetFilters = viewModel::onFilterReset,
                     sheetState = sheetState
                 )
             }

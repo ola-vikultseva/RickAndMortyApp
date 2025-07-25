@@ -7,10 +7,31 @@ data class CharacterFilter(
     val gender: CharacterGender? = null
 )
 
-fun CharacterFilter.isEmpty(): Boolean = status == null && species == null && type == null && gender == null
+fun CharacterFilter.isEmpty(): Boolean = listOf(status, species, type, gender).all { it == null }
 
-enum class CharacterStatus { ALIVE, DEAD, UNKNOWN }
-enum class CharacterSpecies { HUMAN, ALIEN, ANIMAL, ROBOT }
-enum class CharacterType { GENETIC_EXPERIMENT, PARASITE, SUPERHUMAN, VAMPIRE }
-enum class CharacterGender { FEMALE, MALE, GENDERLESS, UNKNOWN }
+enum class CharacterStatus {
+    ALIVE,
+    DEAD,
+    UNKNOWN
+}
 
+enum class CharacterSpecies {
+    HUMAN,
+    ALIEN,
+    ANIMAL,
+    ROBOT
+}
+
+enum class CharacterType {
+    GENETIC_EXPERIMENT,
+    PARASITE,
+    SUPERHUMAN,
+    VAMPIRE
+}
+
+enum class CharacterGender {
+    FEMALE,
+    MALE,
+    GENDERLESS,
+    UNKNOWN
+}

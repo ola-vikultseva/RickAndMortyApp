@@ -48,7 +48,7 @@ class CharacterListViewModel @Inject constructor(
         _characterFilter.value = characterFilter
     }
 
-    fun applyFilter() {
+    fun onFilterApply() {
         val queryParams = CharacterQueryParams(
             searchQuery = searchQuery.value.takeIf { it.isNotEmpty() },
             characterFilter = characterFilter.value
@@ -56,7 +56,7 @@ class CharacterListViewModel @Inject constructor(
         repository.setQueryParams(queryParams)
     }
 
-    fun resetFilter() {
+    fun onFilterReset() {
         _characterFilter.value = CharacterFilter()
     }
 

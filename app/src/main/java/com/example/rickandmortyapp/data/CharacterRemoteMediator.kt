@@ -11,14 +11,15 @@ import com.example.rickandmortyapp.data.db.entity.CharacterEntity
 import com.example.rickandmortyapp.data.db.entity.RemoteKeys
 import com.example.rickandmortyapp.data.remote.api.RickAndMortyApiService
 import com.example.rickandmortyapp.data.remote.model.Character
-import retrofit2.HttpException
-import java.io.IOException
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalPagingApi::class)
 class CharacterRemoteMediator(
     private val apiService: RickAndMortyApiService,
     private val database: RickAndMortyDatabase
 ) : RemoteMediator<Int, CharacterEntity>() {
+
+    private var failedOnce = false
 
     override suspend fun load(loadType: LoadType, state: PagingState<Int, CharacterEntity>): MediatorResult {
         val page = when (loadType) {
@@ -30,8 +31,13 @@ class CharacterRemoteMediator(
                 remoteKey?.nextKey ?: return MediatorResult.Success(true)
             }
         }
-        Log.d("Pagers", "RemoteMediator - load()")
+        Log.d("Pagers", "RemoteMediator - load(), page: $page")
         return try {
+            if (page == 6 && !failedOnce) {
+                failedOnce = true
+                throw Exception()
+            }
+            delay(3000)
             val response = apiService.getCharacters(page)
             val characters = response.results
             val endOfPaginationReached = characters.isEmpty()
@@ -52,12 +58,8 @@ class CharacterRemoteMediator(
             }
             Log.d("Pagers", "RemoteMediator - result: MediatorResult.Success")
             MediatorResult.Success(endOfPaginationReached)
-        } catch (e: IOException) {
-            Log.e("Pagers", "RemoteMediator - IOException in load(): ${e.message}")
-            Log.d("Pagers", "RemoteMediator - result: MediatorResult.Error")
-            MediatorResult.Error(e)
-        } catch (e: HttpException) {
-            Log.e("Pagers", "RemoteMediator - HttpException in load(): ${e.message}")
+        } catch (e: Exception) {
+            Log.e("Pagers", "RemoteMediator - Exception in load(): ${e.message}")
             Log.d("Pagers", "RemoteMediator - result: MediatorResult.Error")
             MediatorResult.Error(e)
         }

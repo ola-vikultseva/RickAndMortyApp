@@ -1,6 +1,5 @@
 package com.example.rickandmortyapp.presentation.characterlist
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -29,47 +28,49 @@ class CharacterListViewModel @Inject constructor(
     val characters: Flow<PagingData<Character>> = repository.getCharacters().cachedIn(viewModelScope)
 
     // Holds both filters and search query (in 'name' field)
-    private val _characterFilter = MutableStateFlow(CharacterFilter())
-    val characterFilter = _characterFilter.asStateFlow()
+    private val _pendingFilter = MutableStateFlow(CharacterFilter())
+    val pendingFilter = _pendingFilter.asStateFlow()
+
+    private val appliedFilter = MutableStateFlow(CharacterFilter())
 
     init {
         observeSearchQueryChanges()
     }
 
     fun onSearchQueryChange(query: String) {
-        Log.d("CharacterFilter", "New search query: $query")
-        val updatedFilter = _characterFilter.value.copy(name = query.takeIf { it.isNotEmpty() })
-        Log.d("CharacterFilter", "New filter: $updatedFilter")
-        _characterFilter.value = updatedFilter
+        _pendingFilter.value = _pendingFilter.value.copy(name = query.takeIf { it.isNotEmpty() })
+        appliedFilter.value = appliedFilter.value.copy(name = query.takeIf { it.isNotEmpty() })
     }
 
     fun onFilterChange(characterFilter: CharacterFilter) {
-        Log.d("CharacterFilter", "New filter: $characterFilter")
-        _characterFilter.value = characterFilter
+        _pendingFilter.value = characterFilter
     }
 
     fun onFilterApply() {
-        repository.setCharacterFilter(_characterFilter.value)
+        appliedFilter.value = _pendingFilter.value
+        repository.setCharacterFilter(appliedFilter.value)
     }
 
     fun onFilterReset() {
-        val updatedFilter = _characterFilter.value.copy(
+        _pendingFilter.value = _pendingFilter.value.copy(
             status = null,
             species = null,
             type = null,
             gender = null
         )
-        Log.d("CharacterFilter", "New filter: $updatedFilter")
-        _characterFilter.value = updatedFilter
+    }
+
+    fun resetPendingToApplied() {
+        _pendingFilter.value = appliedFilter.value
     }
 
     private fun observeSearchQueryChanges() {
-        _characterFilter
+        appliedFilter
             .map { it.name }
             .debounce(500)
             .distinctUntilChanged()
             .onEach {
-                repository.setCharacterFilter(_characterFilter.value)
+                repository.setCharacterFilter(appliedFilter.value)
             }
             .launchIn(viewModelScope)
     }

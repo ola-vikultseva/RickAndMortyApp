@@ -28,16 +28,17 @@ import com.example.rickandmortyapp.presentation.utils.displayName
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FilterModalBottomSheet(
+fun FilterBottomSheet(
     characterFilter: CharacterFilter,
     onFilterChange: (CharacterFilter) -> Unit,
     onApplyFilters: () -> Unit,
     onResetFilters: () -> Unit,
+    onComponentClose: () -> Unit,
     sheetState: SheetState,
     modifier: Modifier = Modifier
 ) {
     ModalBottomSheet(
-        onDismissRequest = { },
+        onDismissRequest = onComponentClose,
         sheetState = sheetState,
         modifier = modifier
     ) {

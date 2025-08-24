@@ -26,7 +26,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -46,7 +45,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.rickandmortyapp.presentation.characterlist.components.CharacterItem
-import com.example.rickandmortyapp.presentation.characterlist.components.FilterModalBottomSheet
+import com.example.rickandmortyapp.presentation.characterlist.components.FilterBottomSheet
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,10 +53,14 @@ import kotlinx.coroutines.launch
 fun CharacterListScreen(
     viewModel: CharacterListViewModel = hiltViewModel()
 ) {
-    val characterFilter by viewModel.characterFilter.collectAsState()
+    val characterFilter by viewModel.pendingFilter.collectAsState()
     val characters = viewModel.characters.collectAsLazyPagingItems()
     val refreshState = characters.loadState.refresh
     val appendState = characters.loadState.append
+
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
+    val focusManager = LocalFocusManager.current
 
     LaunchedEffect(refreshState) {
         Log.d("UiState", "Refresh state changed → $refreshState")
@@ -65,10 +68,6 @@ fun CharacterListScreen(
     LaunchedEffect(appendState) {
         Log.d("UiState", "Append state changed → $appendState")
     }
-
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val scope = rememberCoroutineScope()
-    val focusManager = LocalFocusManager.current
 
     Column(
         modifier = Modifier
@@ -198,27 +197,19 @@ fun CharacterListScreen(
             }
         }
         if (sheetState.isVisible) {
-            ModalBottomSheet(
-                sheetState = sheetState,
-                onDismissRequest = {
+            FilterBottomSheet(
+                characterFilter = characterFilter,
+                onFilterChange = viewModel::onFilterChange,
+                onApplyFilters = {
                     scope.launch {
+                        viewModel.onFilterApply()
                         sheetState.hide()
                     }
-                }
-            ) {
-                FilterModalBottomSheet(
-                    characterFilter = characterFilter,
-                    onFilterChange = viewModel::onFilterChange,
-                    onApplyFilters = {
-                        scope.launch {
-                            viewModel.onFilterApply()
-                            sheetState.hide()
-                        }
-                    },
-                    onResetFilters = viewModel::onFilterReset,
-                    sheetState = sheetState
-                )
-            }
+                },
+                onResetFilters = viewModel::onFilterReset,
+                onComponentClose = viewModel::resetPendingToApplied,
+                sheetState = sheetState
+            )
         }
     }
 }
